@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: rate-printer
+
+# gRPC client configuration
+grpc:
+  client:
+    currency-rate-service:
+      address: 'static://localhost:9090'
+      negotiationType: plaintext
+      # Enable keep-alive to maintain connection
+      enableKeepAlive: true
+      keepAliveTime: 30s
+      keepAliveTimeout: 10s
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.example.rateprinter: INFO
+    net.devh.boot.grpc: INFO
