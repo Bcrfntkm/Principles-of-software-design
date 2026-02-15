@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Watches Zookeeper for available producer instances and maintains a local cache.
- */
+
 @Component
 public class ServiceDiscovery {
     
@@ -68,11 +66,6 @@ public class ServiceDiscovery {
         }
     }
     
-    /**
-     * Handles changes to service instances in Zookeeper.
-     * 
-     * @param event the change event from Zookeeper
-     */
     private void handleInstanceChange(PathChildrenCacheEvent event) {
         try {
             switch (event.getType()) {
@@ -101,7 +94,6 @@ public class ServiceDiscovery {
                     break;
                     
                 default:
-                    // Ignore other events
                     break;
             }
         } catch (Exception e) {
@@ -109,9 +101,6 @@ public class ServiceDiscovery {
         }
     }
     
-    /**
-     * Refreshes the local cache of service instances from Zookeeper.
-     */
     private void refreshInstances() {
         try {
             List<ServiceInstance> newInstances = new ArrayList<>();
@@ -151,28 +140,14 @@ public class ServiceDiscovery {
         }
     }
     
-    /**
-     * Returns the current list of available service instances.
-     * 
-     * @return thread-safe copy of available instances
-     */
     public List<ServiceInstance> getInstances() {
         return new ArrayList<>(instances);
     }
     
-    /**
-     * Returns the number of available service instances.
-     * 
-     * @return count of active instances
-     */
     public int getInstanceCount() {
         return instances.size();
     }
     
-    /**
-     * Cleanup method called before bean destruction.
-     * Closes the Zookeeper cache and releases resources.
-     */
     @PreDestroy
     public void cleanup() {
         try {

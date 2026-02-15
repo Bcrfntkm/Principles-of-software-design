@@ -36,6 +36,9 @@ public class ServiceRegistry {
     @Value("${service.registry.path:/services/currency-rate-provider}")
     private String serviceRegistryPath;
     
+    @Value("${service.host:localhost}")
+    private String serviceHost;
+    
     private String instanceId;
     private String instancePath;
     private String host;
@@ -49,9 +52,9 @@ public class ServiceRegistry {
     public void initialize() {
         try {
             this.instanceId = "instance-" + UUID.randomUUID().toString();
-            this.host = determineHostAddress();
+            this.host = serviceHost;
             
-            log.info("Initializing service registry for instance: {}", instanceId);
+            log.info("Initializing service registry for instance: {} with host: {}", instanceId, host);
             
             addConnectionStateListener();
             registerService();
@@ -112,15 +115,6 @@ public class ServiceRegistry {
         return metadata;
     }
 
-    private String determineHostAddress() {
-        try {
-            InetAddress localHost = InetAddress.getLocalHost();
-            return localHost.getHostAddress();
-        } catch (Exception e) {
-            log.warn("Could not determine host address, using localhost", e);
-            return "localhost";
-        }
-    }
 
     private void addConnectionStateListener() {
         ConnectionStateListener listener = new ConnectionStateListener() {

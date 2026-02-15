@@ -9,9 +9,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Round-robin load balancer for distributing requests across service instances.
- */
 @Component
 public class RoundRobinLoadBalancer {
     
@@ -19,21 +16,14 @@ public class RoundRobinLoadBalancer {
     
     private final ServiceDiscovery serviceDiscovery;
     
-    /**
-     * Thread-safe counter for round-robin rotation
-     */
+
     private final AtomicInteger currentIndex = new AtomicInteger(0);
     
     public RoundRobinLoadBalancer(ServiceDiscovery serviceDiscovery) {
         this.serviceDiscovery = serviceDiscovery;
     }
     
-    /**
-     * Returns the next available service instance using round-robin algorithm.
-     * 
-     * @return the next service instance to use
-     * @throws NoAvailableInstancesException if no instances are available
-     */
+
     public ServiceInstance getNextInstance() {
         List<ServiceInstance> instances = serviceDiscovery.getInstances();
         
@@ -51,18 +41,11 @@ public class RoundRobinLoadBalancer {
         return selectedInstance;
     }
     
-    /**
-     * Returns the current number of available instances.
-     * 
-     * @return count of available instances
-     */
     public int getAvailableInstanceCount() {
         return serviceDiscovery.getInstanceCount();
     }
     
-    /**
-     * Exception thrown when no service instances are available.
-     */
+
     public static class NoAvailableInstancesException extends RuntimeException {
         public NoAvailableInstancesException(String message) {
             super(message);

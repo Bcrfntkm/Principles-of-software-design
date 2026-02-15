@@ -9,14 +9,6 @@ A distributed system of Java services communicating via gRPC with Apache Zookeep
 - **Load balancing** distributes requests using round-robin algorithm
 - **Automatic failover** ensures resilience when producers fail
 
-## Features
-
-✅ Automatic Service Registration  
-✅ Dynamic Service Discovery  
-✅ Round-Robin Load Balancing  
-✅ Automatic Failover  
-✅ Connection Resilience  
-
 ## Prerequisites
 
 - Java 17+
@@ -50,14 +42,7 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-### 4. Watch Output
-
-```
-[2026-02-15 16:07:23] Current USD/RUB rate: 75.43 (from instance: instance-abc123)
-[2026-02-15 16:07:28] Current USD/RUB rate: 74.87 (from instance: instance-def456)
-```
-
-### 5. Test Failover
+### 4. Test Failover
 
 Stop a producer (Ctrl+C) and watch the consumer automatically route to remaining instances.
 
@@ -80,8 +65,6 @@ HW1/
 ├── rate-printer/               # gRPC Consumer
 ├── scripts/                    # Utility scripts
 ├── docker-compose.yml          # Zookeeper setup
-├── TESTING.md                  # Testing guide
-└── zookeeper-integration-architecture.md  # Architecture details
 ```
 
 ## Tech Stack
@@ -91,28 +74,3 @@ HW1/
 - Apache Zookeeper 3.9.1
 - Apache Curator 5.5.0
 - Java 17
-
-## Documentation
-
-- **[zookeeper-integration-architecture.md](zookeeper-integration-architecture.md)** - Detailed architecture and design
-- **[TESTING.md](TESTING.md)** - Comprehensive testing scenarios
-
-## Troubleshooting
-
-### Zookeeper Issues
-```bash
-docker ps | grep zookeeper
-docker logs zookeeper
-```
-
-### Port Conflicts
-```bash
-lsof -i :9090
-kill -9 <PID>
-```
-
-See [TESTING.md](TESTING.md#troubleshooting) for more details.
-
-## License
-
-Educational project for BIT - Architecture Design course.
