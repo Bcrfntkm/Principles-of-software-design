@@ -1,117 +1,76 @@
-# Homework 1: gRPC Currency Rate Services
+# Homework 1: Distributed gRPC Currency Rate Services with Zookeeper
 
-Two Java services communicating via gRPC. One provides USD/RUB exchange rates, the other fetches and prints them.
+A distributed system of Java services communicating via gRPC with Apache Zookeeper for service registry, discovery, and load balancing.
 
-## Services
+## Overview
 
-### 1. currency-rate-provider (Server)
-- gRPC server on port 9090
-- Returns random USD/RUB rates (70-80 range)
-- See [currency-rate-provider/README.md](currency-rate-provider/README.md)
+- **Producers** (currency-rate-provider) register in Zookeeper and serve exchange rates via gRPC
+- **Consumers** (rate-printer) dynamically discover producers through Zookeeper
+- **Load balancing** distributes requests using round-robin algorithm
+- **Automatic failover** ensures resilience when producers fail
 
-### 2. rate-printer (Client)
-- gRPC client that connects to the server
-- Fetches rates every 5 seconds
-- Prints them to console
-- See [rate-printer/README.md](rate-printer/README.md)
+## Prerequisites
+
+- Java 17+
+- Maven 3.6+
+- Docker and Docker Compose
 
 ## Quick Start
 
-**1. Start the server:**
+### 1. Start Zookeeper
+
+```bash
+docker-compose up -d
+```
+
+### 2. Start Producer(s)
+
 ```bash
 cd currency-rate-provider
 mvn clean install
 mvn spring-boot:run
+
+# Optional: Start additional instances on different ports
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=9091 --grpc.server.port=9091"
 ```
 
-**2. In another terminal, start the client:**
+### 3. Start Consumer
+
 ```bash
 cd rate-printer
 mvn clean install
 mvn spring-boot:run
 ```
 
-**3. Watch the output:**
-```
-[2026-02-09 11:20:45] Current USD/RUB rate: 75.43
-[2026-02-09 11:20:50] Current USD/RUB rate: 74.87
-[2026-02-09 11:20:55] Current USD/RUB rate: 76.12
-```
+### 4. Test Failover
 
-## Stopping the Services
+Stop a producer (Ctrl+C) and watch the consumer automatically route to remaining instances.
 
-### Simple Method (Recommended)
-Press `Ctrl+C` in the terminal where the service is running. This will gracefully shut down the application.
+## Stopping Services
 
-### If Process is Stuck
-If `Ctrl+C` doesn't work, you can find and kill the process manually:
-
-**1. Find the process:**
 ```bash
-# Show all Java processes
-jps -l
+# Stop all at once
+./scripts/stop-all.sh
 
-# Or use ps for more details
-ps aux | grep java
+# Or individually
+docker-compose down  # Zookeeper
+Ctrl+C              # Producers/Consumer
 ```
 
-**2. Kill the process:**
-```bash
-# Using PID from the command above
-kill <PID>
-
-# If that doesn't work, force kill
-kill -9 <PID>
-```
-
-**Example:**
-```bash
-$ jps -l
-12345 com.example.currencyrateprovider.CurrencyRateProviderApplication
-12346 com.example.rateprinter.RatePrinterApplication
-
-$ kill 12345  # Stops currency-rate-provider
-$ kill 12346  # Stops rate-printer
-```
-
-## Requirements
-
-- Java 17+
-- Maven 3.6+
-
-## Architecture
+## Project Structure
 
 ```
-┌─────────────────────────┐         gRPC          ┌─────────────────────────┐
-│  currency-rate-provider │ ◄─────────────────── │     rate-printer        │
-│   (Server)              │                       │   (Client)              │
-│   Port: 9090            │   GetRate Request     │   Scheduled Task        │
-│                         │ ─────────────────────►│   Every 5 seconds       │
-│   Returns: USD/RUB rate │   GetRate Response    │                         │
-└─────────────────────────┘                       └─────────────────────────┘
+HW1/
+├── currency-rate-provider/     # gRPC Producer
+├── rate-printer/               # gRPC Consumer
+├── scripts/                    # Utility scripts
+├── docker-compose.yml          # Zookeeper setup
 ```
 
 ## Tech Stack
 
 - Spring Boot 3.2.0
 - gRPC 1.60.0
-- Protocol Buffers 3.25.1
+- Apache Zookeeper 3.9.1
+- Apache Curator 5.5.0
 - Java 17
-
-## Project Structure
-
-```
-HW1/
-├── currency-rate-provider/     # gRPC server
-│   ├── src/
-│   ├── proto/
-│   ├── resources/
-│   ├── pom.xml
-│   └── README.md
-├── rate-printer/               # gRPC client
-│   ├── service/
-│   ├── proto/
-│   ├── resources/
-│   ├── pom.xml
-│   └── README.md
-└── README.md                   # This file

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper-server
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - zookeeper-data:/data
+      - zookeeper-datalog:/datalog
+    healthcheck:
+      test: ["CMD", "zkServer.sh", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - currency-rate-network
+
+volumes:
+  zookeeper-data:
+    driver: local
+  zookeeper-datalog:
+    driver: local
+
+networks:
+  currency-rate-network:
+    driver: bridge
