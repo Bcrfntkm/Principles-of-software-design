@@ -13,12 +13,7 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * HTTP REST controller that provides an HTTP/JSON gateway to the gRPC currency rate service.
- * This controller is primarily used for Pact contract testing, allowing HTTP-based
- * contract verification while the actual service uses gRPC.
- * 
- * The controller replicates the same rate calculation logic as the gRPC service
- * to ensure consistency between HTTP and gRPC interfaces.
+ * HTTP gateway for currency rate service, used for Pact contract testing.
  */
 @RestController
 @RequestMapping("/api")
@@ -30,30 +25,14 @@ public class CurrencyRateHttpController {
     private static final double VARIATION = 2.0;
     private final Random random = new Random();
 
-    /**
-     * HTTP endpoint that returns the current USD/RUB exchange rate.
-     * This endpoint mirrors the gRPC GetRate method functionality.
-     * 
-     * @return ResponseEntity containing a JSON object with the rate field
-     * 
-     * Example response:
-     * {
-     *   "rate": 75.42
-     * }
-     */
     @GetMapping("/rate")
     public ResponseEntity<Map<String, Object>> getRate() {
         try {
-            // Calculate rate with random variation: BASE_RATE ± VARIATION
             double variation = (random.nextDouble() * 2 - 1) * VARIATION;
-            double rate = BASE_RATE + variation;
-            
-            // Round to 2 decimal places for cleaner output
-            rate = Math.round(rate * 100.0) / 100.0;
+            double rate = Math.round((BASE_RATE + variation) * 100.0) / 100.0;
             
             logger.info("HTTP Gateway: Providing USD/RUB rate: {}", rate);
             
-            // Build JSON response
             Map<String, Object> result = new HashMap<>();
             result.put("rate", rate);
             
@@ -68,12 +47,6 @@ public class CurrencyRateHttpController {
         }
     }
 
-    /**
-     * Health check endpoint for the HTTP gateway.
-     * Used to verify the service is running and accessible.
-     * 
-     * @return ResponseEntity with status information
-     */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> health = new HashMap<>();
