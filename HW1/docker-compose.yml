@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: zookeeper:3.9
+    container_name: zookeeper-server
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - zookeeper-data:/data
+      - zookeeper-datalog:/datalog
+    healthcheck:
+      test: ["CMD", "zkServer.sh", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - currency-rate-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: pact-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: pact_user
+      POSTGRES_PASSWORD: pact_password
+      POSTGRES_DB: pact_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pact_user -d pact_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - currency-rate-network
+
+  pact-broker:
+    image: pactfoundation/pact-broker:latest
+    container_name: pact-broker
+    ports:
+      - "9292:9292"
+    environment:
+      PACT_BROKER_DATABASE_USERNAME: pact_user
+      PACT_BROKER_DATABASE_PASSWORD: pact_password
+      PACT_BROKER_DATABASE_NAME: pact_db
+      PACT_BROKER_DATABASE_HOST: postgres
+      PACT_BROKER_DATABASE_PORT: 5432
+      PACT_BROKER_LOG_LEVEL: INFO
+      PACT_BROKER_SQL_LOG_LEVEL: DEBUG
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9292/diagnostic/status/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - currency-rate-network
+
+volumes:
+  zookeeper-data:
+    driver: local
+  zookeeper-datalog:
+    driver: local
+  postgres-data:
+    driver: local
+
+networks:
+  currency-rate-network:
+    driver: bridge
