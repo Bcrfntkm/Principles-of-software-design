@@ -42,12 +42,13 @@ public class RatePrinterService {
     @Scheduled(fixedDelay = 5000, initialDelay = 2000)
     public void printCurrentRate() {
         ManagedChannel channel = null;
+        ServiceInstance instance = null;
         
         try {
             // Get next instance from load balancer
-            ServiceInstance instance = loadBalancer.getNextInstance();
+            instance = loadBalancer.getNextInstance();
             
-            logger.debug("Using instance: {} at {}", instance.getInstanceId(), instance.getAddress());
+            logger.info("[CLIENT] Sending gRPC request: GetRate() to {}", instance.getAddress());
             
             channel = ManagedChannelBuilder
                 .forTarget(instance.getAddress())
@@ -60,25 +61,28 @@ public class RatePrinterService {
             GetRateRequest request = GetRateRequest.newBuilder().build();
             GetRateResponse response = stub.getRate(request);
             
+            logger.info("[CLIENT] Received response: USD/RUB rate = {}", response.getRate());
+            
             String timestamp = LocalDateTime.now().format(formatter);
             String rateFormatted = String.format("%.2f", response.getRate());
             
-            System.out.println(String.format("[%s] Current USD/RUB rate: %s (from instance: %s)", 
+            System.out.println(String.format("[%s] Current USD/RUB rate: %s (from instance: %s)",
                 timestamp, rateFormatted, instance.getInstanceId()));
             
         } catch (RoundRobinLoadBalancer.NoAvailableInstancesException e) {
             String timestamp = LocalDateTime.now().format(formatter);
-            logger.error("[{}] ERROR: No currency-rate-provider instances are currently available. " +
-                    "Please ensure at least one producer is running and registered in Zookeeper.", timestamp);
+            logger.error("[CLIENT] Error fetching rate: No available instances. " +
+                    "Please ensure at least one producer is running and registered in Zookeeper.");
             
         } catch (StatusRuntimeException e) {
             String timestamp = LocalDateTime.now().format(formatter);
-            logger.error("[{}] ERROR: Failed to connect to currency-rate-provider service: {}", 
-                    timestamp, e.getStatus());
+            String address = instance != null ? instance.getAddress() : "unknown";
+            logger.error("[CLIENT] Error fetching rate from {}: {}", address, e.getStatus());
             
         } catch (Exception e) {
             String timestamp = LocalDateTime.now().format(formatter);
-            logger.error("[{}] ERROR: Unexpected error occurred: {}", timestamp, e.getMessage(), e);
+            String address = instance != null ? instance.getAddress() : "unknown";
+            logger.error("[CLIENT] Error fetching rate from {}: {}", address, e.getMessage(), e);
             
         } finally {
             // Always close the channel to free resources

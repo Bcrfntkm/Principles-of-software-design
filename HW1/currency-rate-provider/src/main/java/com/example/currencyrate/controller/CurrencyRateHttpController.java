@@ -28,10 +28,12 @@ public class CurrencyRateHttpController {
     @GetMapping("/rate")
     public ResponseEntity<Map<String, Object>> getRate() {
         try {
+            logger.info("[SERVER] Received HTTP request: GET /api/rate");
+            
             double variation = (random.nextDouble() * 2 - 1) * VARIATION;
             double rate = Math.round((BASE_RATE + variation) * 100.0) / 100.0;
             
-            logger.info("HTTP Gateway: Providing USD/RUB rate: {}", rate);
+            logger.info("[SERVER] Sending HTTP response: USD/RUB rate = {}", rate);
             
             Map<String, Object> result = new HashMap<>();
             result.put("rate", rate);
@@ -39,7 +41,7 @@ public class CurrencyRateHttpController {
             return ResponseEntity.ok(result);
             
         } catch (Exception e) {
-            logger.error("HTTP Gateway: Error processing rate request", e);
+            logger.error("[SERVER] Error processing HTTP rate request: {}", e.getMessage(), e);
             Map<String, Object> error = new HashMap<>();
             error.put("error", "Failed to retrieve rate");
             error.put("message", e.getMessage());
