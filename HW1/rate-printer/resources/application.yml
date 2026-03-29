@@ -1,21 +1,63 @@
+# Spring Boot Application Configuration
 spring:
   application:
     name: rate-printer
 
-# gRPC client configuration
+# Zookeeper Configuration
+zookeeper:
+  connection-string: localhost:2181
+  session-timeout: 30000
+  connection-timeout: 15000
+  retry-max-attempts: 3
+  retry-base-sleep-time: 1000
+
+# Service Discovery Configuration
+service:
+  discovery:
+    path: /services/currency-rate-provider/instances
+    refresh-interval: 60000
+    cache-ttl: 60000
+
+# gRPC Client Configuration (for dynamic connections)
 grpc:
   client:
     currency-rate-service:
-      address: 'static://localhost:9090'
-      negotiationType: plaintext
-      # Enable keep-alive to maintain connection
-      enableKeepAlive: true
-      keepAliveTime: 30s
-      keepAliveTimeout: 10s
+      negotiation-type: plaintext
+      enable-keep-alive: true
+      keep-alive-time: 30s
+      keep-alive-timeout: 10s
 
-# Logging configuration
+# Logging Configuration
 logging:
   level:
     root: INFO
-    com.example.rateprinter: INFO
-    net.devh.boot.grpc: INFO
+    com.example.rateprinter: DEBUG
+    org.apache.curator: INFO
+    org.apache.zookeeper: WARN
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  server:
+    port: 8082
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+
+# Application Info
+info:
+  app:
+    name: Rate Printer
+    description: gRPC client for fetching currency rates via Zookeeper discovery
+    version: 1.0.0
