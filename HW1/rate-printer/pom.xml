@@ -126,11 +126,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring Boot Web for HTTP Gateway Testing -->
+        <!-- Spring Boot Web for HTTP Actuator Endpoints -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

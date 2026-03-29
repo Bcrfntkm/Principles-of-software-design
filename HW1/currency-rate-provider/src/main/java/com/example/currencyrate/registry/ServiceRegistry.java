@@ -30,7 +30,7 @@ public class ServiceRegistry {
     private final CuratorFramework curatorFramework;
     private final ObjectMapper objectMapper;
     
-    @Value("${server.port:9090}")
+    @Value("${grpc.server.port:9090}")
     private int serverPort;
     
     @Value("${service.registry.path:/services/currency-rate-provider}")
