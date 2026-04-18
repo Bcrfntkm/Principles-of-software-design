@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class RatePrinterService {
 
     private static final Logger logger = LoggerFactory.getLogger(RatePrinterService.class);
+    private volatile boolean running = true;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
     private final RoundRobinLoadBalancer loadBalancer;
@@ -39,8 +40,9 @@ public class RatePrinterService {
      * Uses dynamic service discovery to get the next available producer instance and creates
      * a gRPC channel on-demand for each request.
      */
-    @Scheduled(fixedDelay = 5000, initialDelay = 2000)
+    @Scheduled(fixedDelayString = "${rate-printer.interval-ms:5000}", initialDelay = 2000)
     public void printCurrentRate() {
+        if (!running) return;
         ManagedChannel channel = null;
         ServiceInstance instance = null;
         
@@ -96,5 +98,11 @@ public class RatePrinterService {
                 }
             }
         }
+    }
+
+    @jakarta.annotation.PreDestroy
+    public void shutdown() {
+        this.running = false;
+        logger.info("Shutting down RatePrinterService...");
     }
 }

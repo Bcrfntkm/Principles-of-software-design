@@ -22,8 +22,11 @@ public class CurrencyRateServiceImpl extends CurrencyRateServiceGrpc.CurrencyRat
 
     private static final Logger logger = LoggerFactory.getLogger(CurrencyRateServiceImpl.class);
     
-    private static final double BASE_RATE = 75.0;
-    private static final double VARIATION = 2.0;
+    @org.springframework.beans.factory.annotation.Value("${currency.rate.base:75.0}")
+    private double baseRate;
+
+    @org.springframework.beans.factory.annotation.Value("${currency.rate.variation:2.0}")
+    private double variation;
     private final Random random = new Random();
     private final MeterRegistry meterRegistry;
 
@@ -57,8 +60,8 @@ public class CurrencyRateServiceImpl extends CurrencyRateServiceGrpc.CurrencyRat
                 .register(meterRegistry)
                 .increment();
             
-            double variation = (random.nextDouble() * 2 - 1) * VARIATION; // Random value between -2.0 and +2.0
-            double rate = BASE_RATE + variation;
+            double currentVariation = (random.nextDouble() * 2 - 1) * variation; // Random value between -2.0 and +2.0
+            double rate = baseRate + currentVariation;
             
             rate = Math.round(rate * 100.0) / 100.0;
             

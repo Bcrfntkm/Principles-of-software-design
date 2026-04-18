@@ -21,8 +21,11 @@ public class CurrencyRateHttpController {
     
     private static final Logger logger = LoggerFactory.getLogger(CurrencyRateHttpController.class);
     
-    private static final double BASE_RATE = 75.0;
-    private static final double VARIATION = 2.0;
+    @org.springframework.beans.factory.annotation.Value("${currency.rate.base:75.0}")
+    private double baseRate;
+
+    @org.springframework.beans.factory.annotation.Value("${currency.rate.variation:2.0}")
+    private double variation;
     private final Random random = new Random();
 
     @GetMapping("/rate")
@@ -30,8 +33,8 @@ public class CurrencyRateHttpController {
         try {
             logger.info("[SERVER] Received HTTP request: GET /api/rate");
             
-            double variation = (random.nextDouble() * 2 - 1) * VARIATION;
-            double rate = Math.round((BASE_RATE + variation) * 100.0) / 100.0;
+            double currentVariation = (random.nextDouble() * 2 - 1) * variation;
+            double rate = Math.round((baseRate + currentVariation) * 100.0) / 100.0;
             
             logger.info("[SERVER] Sending HTTP response: USD/RUB rate = {}", rate);
             

@@ -1,7 +1,17 @@
 # Spring Boot Application Configuration
+server:
+  shutdown: graceful
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   application:
     name: rate-printer
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 # Zookeeper Configuration
 zookeeper:
