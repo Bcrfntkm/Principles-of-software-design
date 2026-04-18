@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'currency-rate-provider'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8081']
+        labels:
+          application: 'currency-rate-provider'
+          service: 'grpc-server'
+
+  - job_name: 'rate-printer'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8082']
+        labels:
+          application: 'rate-printer'
+          service: 'grpc-client'
+
+  - job_name: 'zookeeper'
+    static_configs:
+      - targets: ['zookeeper:2181']
+        labels:
+          application: 'zookeeper'
+          service: 'service-registry'

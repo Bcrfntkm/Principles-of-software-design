@@ -1,0 +1,9 @@
+zookeeper:
+  connection-string: localhost:2181
+
+rate-printer:
+  interval-ms: 5000
+
+logging:
+  level:
+    com.example: DEBUG

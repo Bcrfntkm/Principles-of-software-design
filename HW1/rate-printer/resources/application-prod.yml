@@ -1,0 +1,9 @@
+zookeeper:
+  connection-string: ${ZOOKEEPER_HOST:localhost}:${ZOOKEEPER_PORT:2181}
+
+rate-printer:
+  interval-ms: ${RATE_PRINTER_INTERVAL_MS:5000}
+
+logging:
+  level:
+    com.example: INFO
